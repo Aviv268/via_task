@@ -6,17 +6,22 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pageObjects.ComplicatedPage;
+import pageObjects.ContactUsPage;
+import pageObjects.HeaderMenuPage;
+import webDriver.ActionBot;
 
-public class ComplicatedPageTest {
+public class ComplicatedPageTest extends AbstractTest {
 
     private Playwright playwright;
     private Browser browser;
     private BrowserContext context;
     private Page page;
     private ComplicatedPage complicatedPage;
+    private HeaderMenuPage headerMenuPage;
 
     private static final String PAGE_URL = "https://ultimateqa.com/complicated-page";
     private static final int EXPECTED_BUTTON_COUNT = 12;
+    private static final String EXPECTED_CONTACTUS_HEADER = "Contact Us";
 
     @BeforeClass
     public void setUp() {
@@ -24,7 +29,8 @@ public class ComplicatedPageTest {
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
         context = browser.newContext();
         page = context.newPage();
-        complicatedPage = new ComplicatedPage(page);
+        bot = new ActionBot(page); // Initialize the ActionBot instance
+        complicatedPage = new ComplicatedPage(bot);
         page.navigate(PAGE_URL);
     }
 
@@ -49,6 +55,14 @@ public class ComplicatedPageTest {
         complicatedPage.submitContactForm();
         String successMessage = complicatedPage.getSuccessMessage();
         Assert.assertEquals(successMessage, "Thanks for contacting us");
+    }
+
+    @Test(priority = 4)
+    public void verifyContactUsHeader() {
+        HeaderMenuPage headerPage = new HeaderMenuPage(bot);
+        ContactUsPage contactUsPage = headerPage.clickOnContactUsBtn();
+        String contactUsHeader = contactUsPage.getHeaderTextContext();
+        Assert.assertEquals(contactUsHeader, EXPECTED_CONTACTUS_HEADER);
     }
 
     @AfterClass
